@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); %>
+</head>
+<body class="container">
+
+    <header>
+        <%- include('../partials/header'); %>
+    </header>
+
+    <main>
+        <div class="jumbotron">
+            <h1>Test page</h1>
+            <form action="/" method="post">
+                <p>
+                    <label for="ip">Please enter IP-address:</label>
+                    <input type="text" id="ip" name="ip">
+                </p>
+                <p>
+                    <label for="oids">Please enter OIDs:</label>
+                    <input type="text" id="oids" name="oids" style="width: 100%">
+                </p>
+                <p><%= tagline %></p>
+                <ul>
+                    <% oids.forEach(function(oid) { %>
+                        <li>
+                            <strong><%= oid.oid %></strong>
+                            = <%= oid.resp %>
+                        </li>
+                    <% }); %>
+                </ul>
+                <button type="submit">Request</button>
+            </form>
+
+        </div>
+    </main>
+
+    <footer>
+        <%- include('../partials/footer'); %>
+    </footer>
+
+</body>
+</html>
