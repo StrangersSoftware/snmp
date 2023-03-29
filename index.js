@@ -49,6 +49,55 @@ app.post('/', (req, res) => {
   });
 });
 
+app.get('/services', async (req, res) => {
+  const tagline = `Please set service name to search in a services list`;
+
+  res.render('pages/services', {
+    oids: [],
+    tagline: tagline
+  });
+});
+
+app.post('/services', (req, res) => {
+  const ip = req.body.ip;
+  const name = req.body.name;
+  
+  if (!name) return;
+
+  let oids = [];
+  let service = [];
+
+  const session = snmp.createSession(ip || "127.0.0.1", "public");
+  
+  var oid = "1.3.6.1.2.1.25.4.2.1.2";
+
+  const doneCb = (error) => {
+    if (error) console.error(error.toString());
+    session.close();
+
+    const oids_data = oids.map((oid, key)=> ({ oid, resp: service[key]}));
+
+    res.render('pages/services', {
+      oids: oids_data,
+      tagline: `The following matches found on requested host (${ip || "127.0.0.1"})`,
+    });
+  }
+
+  const feedCb = (varbinds) => {
+      for (var varbind of varbinds) {
+          if (snmp.isVarbindError(varbind)) console.error (snmp.varbindError(varbind));
+          else if (varbind.type === 4 && Buffer.from(varbind.value).toString('utf8').includes(name)) {
+            oids.push(varbind.oid); 
+            service.push(Buffer.from(varbind.value).toString('utf8'));
+            console.log(varbind.oid, Buffer.from(varbind.value).toString('utf8'));
+          }
+      }
+  }
+  
+  var maxRepetitions = 20;
+  session.walk (oid, maxRepetitions, feedCb, doneCb);
+});
+
 app.get('/about', function(req, res) {
   res.render('pages/about');
 });
