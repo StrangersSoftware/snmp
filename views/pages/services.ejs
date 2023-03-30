@@ -24,11 +24,13 @@
                     <input type="text" id="name" name="name">
                 </p>
                 <p><%= tagline %></p>
+                <p><%= subTagline %></p>
                 <ul>
                     <% oids.forEach(function(oid) { %>
                         <li>
                             <strong><%= oid.oid %></strong>
-                            = <%= oid.resp %>
+                            = <%= oid.resp %>,
+                            status = <%= oid.status %>
                         </li>
                     <% }); %>
                 </ul>
