@@ -103,6 +103,54 @@ app.post('/services', (req, res) => {
   var maxRepetitions = 20;
   session.subtree(oid, maxRepetitions, feedCb, doneCb);
 });
+
+app.get('/network', async (req, res) => {
+
+  res.render('pages/network', {
+    oids: [],
+    tagline: '',
+    subTagline: '',
+  });
+});
+
+app.post('/network', (req, res) => {
+  const ip = req.body.ip;
+ 
+  let result = [];
+  let statuses = [];
+
+  const session = snmp.createSession(ip || "127.0.0.1", "public");
+  
+  var oid = "1.3.6.1.2.1.2.2.1";
+
+  const doneCb = (error) => {
+    if (error) console.error(error.toString());
+    session.close();
+
+    const oids_data = result.map((res, key)=> ({ oid: res.oid, resp: res.value, status: statuses[key] }));
+
+    res.render('pages/network', {
+      oids: oids_data,
+      tagline: `The following network adapter found on requested host (${ip || "127.0.0.1"})`,
+      subTagline: `Statuses:  up(1), down(2), testing(3), unknown(4), dormant(5), notPresent(6), lowerLayerDown(7)`,
+    });
+  }
+
+  const feedCb = (varbinds) => {
+    for (var varbind of varbinds) {
+      if (snmp.isVarbindError(varbind)) console.error (snmp.varbindError(varbind));
+        else {
+          if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.2") 
+            result.push({oid: varbind.oid, value: Buffer.from(varbind.value).toString('utf8') });
+
+          if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.8") 
+            statuses.push(varbind.value);
+        }
+    }
+  }
+  
+  var maxRepetitions = 20;
+  session.subtree(oid, maxRepetitions, feedCb, doneCb);
 });
 
 app.get('/about', function(req, res) {
