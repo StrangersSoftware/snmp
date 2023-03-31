@@ -21,6 +21,8 @@
                 </p>
                 <p><%= tagline %></p>
                 <p><%= subTagline %></p>
+                
+                <button type="submit">Request</button>
                 <ul>
                     <% oids.forEach(function(oid) { %>
                         <li>
@@ -30,9 +32,24 @@
                         </li>
                     <% }); %>
                 </ul>
-                <button type="submit">Request</button>
             </form>
-
+            <%if (oids?.length > 0) { %>
+                <form action="/network" method="post">
+                    <select id="select" name="select">
+                        <% for ( var oid of oids ) 
+                            {  %><option value="<%=oid.oid%>" ><%=oid.resp %></option><% } 
+                        %>
+                    </select>
+                    <select id="set" name="set">
+                        <% 
+                            var options = [ { capt: 'up', value: 1}, { capt: 'down', value: 2} ]
+                            for ( var option of options ) 
+                            {  %><option value="<%=option.value %>" ><%=option.capt %></option><% } 
+                        %>
+                    </select>
+                    <button type="submit">Set</button>
+                </form>
+            <% } %>
         </div>
     </main>
 

@@ -115,7 +115,9 @@ app.get('/network', async (req, res) => {
 
 app.post('/network', (req, res) => {
   const ip = req.body.ip;
- 
+  const selected_oid = req.body.select;
+  const new_status = req.body.set;
+
   let result = [];
   let statuses = [];
 
@@ -143,14 +145,40 @@ app.post('/network', (req, res) => {
           if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.2") 
             result.push({oid: varbind.oid, value: Buffer.from(varbind.value).toString('utf8') });
 
-          if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.8") 
+          if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.7") 
             statuses.push(varbind.value);
         }
     }
   }
   
   var maxRepetitions = 20;
-  session.subtree(oid, maxRepetitions, feedCb, doneCb);
+  if (!selected_oid) {
+    console.log('SUBTREE');
+    session.subtree(oid, maxRepetitions, feedCb, doneCb);
+  }
+  else{
+    const varbind = [{
+      oid: `1.3.6.1.2.1.2.2.1.7.${selected_oid.split('.').pop()}`,
+      type: snmp.ObjectType.Integer,
+      value: Number(new_status),
+    }]
+
+    console.log('SET -', varbind[0]);
+
+    session.set(varbind, function (error, varbind) {
+      if (error) {
+          console.error (error.toString());
+      } else {
+          
+              // for version 1 we can assume all OIDs were successful
+              console.log(varbind[0].oid + "|" + varbind[0].value);
+          
+              // for version 2c we must check each OID for an error condition
+              if (snmp.isVarbindError (varbind)) console.error(snmp.varbindError (varbind));
+      }
+      session.close();
+    });
+  }
 });
 
 app.get('/about', function(req, res) {
@@ -160,26 +188,3 @@ app.get('/about', function(req, res) {
 app.listen(port, () => {
   console.log(`Open http://localhost:${port}`);
 });
-
-
-
-
-// var options = {
-//   port: 162,
-//   disableAuthorization: true,
-//   includeAuthentication: false,
-//   accessControlModelType: snmp.AccessControlModelType.None,
-//   engineID: "8000B98380AE1223131213318182919821", // where the X's are random hex digits
-//   address: null,
-//   transport: "udp4"
-// };
-
-// var callback = function (error, notification) {
-//   if ( error ) {
-//       console.error (error);
-//   } else {
-//       console.log (JSON.stringify(notification, null, 2));
-//   }
-// };
-
-// receiver = snmp.createReceiver (options, callback);
