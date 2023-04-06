@@ -28,12 +28,13 @@
                         <li>
                             <strong><%= oid.oid %></strong>
                             = <%= oid.resp %>,
-                            status = <%= oid.status %>
+                            status(<%= oid.status %>),
+                            op. status(<%= oid.opStatus %>),
                         </li>
                     <% }); %>
                 </ul>
             </form>
-            <%if (oids?.length > 0) { %>
+            <%if (oids.length > 0) { %>
                 <form action="/network" method="post">
                     <select id="select" name="select">
                         <% for ( var oid of oids ) 

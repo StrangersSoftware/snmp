@@ -59,35 +59,95 @@ app.get('/services', async (req, res) => res.render('pages/services', {
 app.post('/services', (req, res) => {
   const ip = req.body.ip;
   const name = req.body.name;
-  
-  if (!name) {
-    res.render('pages/services', {
-      oids: [],
-      tagline: 'Error! Please enter service name or part of name.',
-      subTagline: ''
-    });
-
-    return;
-  }
-
-  let result = [];
 
   const session = snmp.createSession(ip || "127.0.0.1", "public");
-  
-  var oid = "1.3.6.1.2.1.25.4.2.1";
+  var oid = "1.3.6.1.2.1.25.4.2";
+  var columns = [2, 6, 7];
 
-  const doneCb = (error) => {
-    if (error) console.error(error.toString());
-    session.close();
+  const responseCb = (error, table) => {
+    if (error) {
+        console.error (error.toString ());
+    } else {
+        var indexes = [];
+        for (let index in table) indexes.push (parseInt (index));
+        
+        const oids_data = indexes.map((index)=> ({ 
+          oid: `1.3.6.1.2.1.25.4.2.${index}`, 
+          resp: table[index][columns[0]], 
+          runType: table[index][columns[1]],
+          status: table[index][columns[2]] 
+        }));
 
-    const oids_data = result.map((res)=> ({ oid: res.oid, resp: res.value, status: res.status }));
+        const search_oid = indexes
+          .filter((index)=> table[index][columns[0]].includes(name))
+          .map((index) => ({ 
+              oid: `1.3.6.1.2.1.25.4.2.${index}`, 
+              resp: table[index][columns[0]], 
+              runType: table[index][columns[1]],
+              status: table[index][columns[2]] 
+            }));
 
-    res.render('pages/services', {
-      oids: oids_data,
-      tagline: `The following matches found on requested host (${ip || "127.0.0.1"})`,
-      subTagline: 'Statuses:  running(1), runnable(2), notRunnable(3), invalid(4)',
-    });
+        res.render('pages/services', {
+          oids: !!name ? search_oid : oids_data,
+          tagline: `The following software found on requested host (${ip || "127.0.0.1"})`,
+          subTagline: 'Run type: running(1), runnable(2), notRunnable(3), invalid(4); Status:  running(1), runnable(2), notRunnable(3), invalid(4)',
+        });
+    }
   }
+
+  var maxRepetitions = 1;
+  console.log('SERVICES TABLE');
+  session.tableColumns(oid, columns, maxRepetitions, responseCb);
+});
+
+
+// app.post('/services', (req, res) => {
+//   const ip = req.body.ip;
+//   const name = req.body.name;
+  
+//   if (!name) {
+//     res.render('pages/services', {
+//       oids: [],
+//       tagline: 'Error! Please enter service name or part of name.',
+//       subTagline: ''
+//     });
+
+//     return;
+//   }
+
+//   let result = [];
+
+//   const session = snmp.createSession(ip || "127.0.0.1", "public");
+  
+//   var oid = "1.3.6.1.2.1.25.4.2.1";
+
+//   const doneCb = (error) => {
+//     if (error) console.error(error.toString());
+//     session.close();
+
+//     const oids_data = result.map((res)=> ({ oid: res.oid, resp: res.value, status: res.status }));
+
+//     res.render('pages/services', {
+//       oids: oids_data,
+//       tagline: `The following matches found on requested host (${ip || "127.0.0.1"})`,
+//       subTagline: 'Statuses:  running(1), runnable(2), notRunnable(3), invalid(4)',
+//     });
+//   }
+
+//   const feedCb = (varbinds) => {
+//       for (var varbind of varbinds) {
+//           if (snmp.isVarbindError(varbind)) console.error (snmp.varbindError(varbind));
+//           if (varbind.type === 4 && Buffer.from(varbind.value).toString('utf8').includes(name)) {
+//             result.push({oid: varbind.oid, value: Buffer.from(varbind.value).toString('utf8'), status: 0 }); 
+//           }
+//           for (var rez of result) 
+//             if (varbind.oid === `1.3.6.1.2.1.25.4.2.1.7.${rez.oid.split('.').pop()}`) rez.status = varbind.value;
+//       }
+//   }
+  
+//   var maxRepetitions = 20;
+//   session.subtree(oid, maxRepetitions, feedCb, doneCb);
+// });
 
 app.get('/hardware', async (req, res) => {
 
@@ -135,48 +195,37 @@ app.get('/network', async (req, res) => {
 
 app.post('/network', (req, res) => {
   const ip = req.body.ip;
+
   const selected_oid = req.body.select;
   const new_status = req.body.set;
 
-  let result = [];
-  let statuses = [];
-
   const session = snmp.createSession(ip || "127.0.0.1", "public");
-  
-  var oid = "1.3.6.1.2.1.2.2.1";
+  var oid = "1.3.6.1.2.1.2.2";
+  var columns = [2, 7, 8];
+  const responseCb = (error, table) => {
+    if (error) {
+        console.error (error.toString ());
+    } else {
+        var indexes = [];
+        for (let index in table) indexes.push (parseInt (index));
 
-  const doneCb = (error) => {
-    if (error) console.error(error.toString());
-    session.close();
-
-    const oids_data = result.map((res, key)=> ({ oid: res.oid, resp: res.value, status: statuses[key] }));
-
-    res.render('pages/network', {
-      oids: oids_data,
-      tagline: `The following network adapter found on requested host (${ip || "127.0.0.1"})`,
-      subTagline: `Statuses:  up(1), down(2), testing(3), unknown(4), dormant(5), notPresent(6), lowerLayerDown(7)`,
-    });
-  }
-
-  const feedCb = (varbinds) => {
-    for (var varbind of varbinds) {
-      if (snmp.isVarbindError(varbind)) console.error (snmp.varbindError(varbind));
-        else {
-          if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.2") 
-            result.push({oid: varbind.oid, value: Buffer.from(varbind.value).toString('utf8') });
-
-          if (varbind.oid.substring(0, varbind.oid.lastIndexOf(".")) === "1.3.6.1.2.1.2.2.1.7") 
-            statuses.push(varbind.value);
-        }
+        const oids_data = indexes.map((index)=> ({ 
+          oid: `1.3.6.1.2.1.2.2.1.2.${index}`, 
+          resp: table[index][columns[0]], 
+          status: table[index][columns[1]],
+          opStatus: table[index][columns[2]],
+        }));
+        res.render('pages/network', {
+          oids: oids_data,
+          tagline: `The following network adapters found on requested host (${ip || "127.0.0.1"})`,
+          subTagline: `Statuses:  up(1), down(2), testing(3), unknown(4), dormant(5), notPresent(6), lowerLayerDown(7)`,
+        });
     }
   }
-  
-  var maxRepetitions = 20;
-  if (!selected_oid) {
-    console.log('SUBTREE');
-    session.subtree(oid, maxRepetitions, feedCb, doneCb);
-  }
-  else{
+
+  var maxRepetitions = 1;
+  if (selected_oid)   
+  {
     const varbind = [{
       oid: `1.3.6.1.2.1.2.2.1.7.${selected_oid.split('.').pop()}`,
       type: snmp.ObjectType.Integer,
@@ -187,18 +236,15 @@ app.post('/network', (req, res) => {
 
     session.set(varbind, function (error, varbind) {
       if (error) {
-          console.error (error.toString());
+        console.error (error.toString());
       } else {
-          
-              // for version 1 we can assume all OIDs were successful
-              console.log(varbind[0].oid + "|" + varbind[0].value);
-          
-              // for version 2c we must check each OID for an error condition
-              if (snmp.isVarbindError (varbind)) console.error(snmp.varbindError (varbind));
+        console.log(varbind[0].oid + "|" + varbind[0].value);
+        if (snmp.isVarbindError (varbind)) console.error(snmp.varbindError (varbind));
       }
-      session.close();
     });
   }
+  console.log('NETWORK TABLE');
+  session.tableColumns(oid, columns, maxRepetitions, responseCb);
 });
 
 app.get('/about', function(req, res) {

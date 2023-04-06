@@ -20,21 +20,23 @@
                     <input type="text" id="ip" name="ip">
                 </p>
                 <p>
-                    <label for="name">Please enter Service name (must be set):</label>
+                    <label for="name">Please enter Service name:</label>
                     <input type="text" id="name" name="name">
                 </p>
                 <p><%= tagline %></p>
+                <button type="submit">Request</button>
+                <p></p>
                 <p><%= subTagline %></p>
                 <ul>
                     <% oids.forEach(function(oid) { %>
                         <li>
                             <strong><%= oid.oid %></strong>
                             = <%= oid.resp %>,
+                            run type = <%= oid.runType %>,
                             status = <%= oid.status %>
                         </li>
                     <% }); %>
                 </ul>
-                <button type="submit">Request</button>
             </form>
 
         </div>
