@@ -101,54 +101,6 @@ app.post('/services', (req, res) => {
 });
 
 
-// app.post('/services', (req, res) => {
-//   const ip = req.body.ip;
-//   const name = req.body.name;
-  
-//   if (!name) {
-//     res.render('pages/services', {
-//       oids: [],
-//       tagline: 'Error! Please enter service name or part of name.',
-//       subTagline: ''
-//     });
-
-//     return;
-//   }
-
-//   let result = [];
-
-//   const session = snmp.createSession(ip || "127.0.0.1", "public");
-  
-//   var oid = "1.3.6.1.2.1.25.4.2.1";
-
-//   const doneCb = (error) => {
-//     if (error) console.error(error.toString());
-//     session.close();
-
-//     const oids_data = result.map((res)=> ({ oid: res.oid, resp: res.value, status: res.status }));
-
-//     res.render('pages/services', {
-//       oids: oids_data,
-//       tagline: `The following matches found on requested host (${ip || "127.0.0.1"})`,
-//       subTagline: 'Statuses:  running(1), runnable(2), notRunnable(3), invalid(4)',
-//     });
-//   }
-
-//   const feedCb = (varbinds) => {
-//       for (var varbind of varbinds) {
-//           if (snmp.isVarbindError(varbind)) console.error (snmp.varbindError(varbind));
-//           if (varbind.type === 4 && Buffer.from(varbind.value).toString('utf8').includes(name)) {
-//             result.push({oid: varbind.oid, value: Buffer.from(varbind.value).toString('utf8'), status: 0 }); 
-//           }
-//           for (var rez of result) 
-//             if (varbind.oid === `1.3.6.1.2.1.25.4.2.1.7.${rez.oid.split('.').pop()}`) rez.status = varbind.value;
-//       }
-//   }
-  
-//   var maxRepetitions = 20;
-//   session.subtree(oid, maxRepetitions, feedCb, doneCb);
-// });
-
 app.get('/hardware', async (req, res) => {
 
   res.render('pages/hardware', {
