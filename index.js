@@ -72,7 +72,7 @@ app.post('/services', (req, res) => {
         for (let index in table) indexes.push (parseInt (index));
         
         const oids_data = indexes.map((index)=> ({ 
-          oid: `1.3.6.1.2.1.25.4.2.${index}`, 
+          oid: `1.3.6.1.2.1.25.4.2.1.3.${index}`, 
           resp: table[index][columns[0]], 
           runType: table[index][columns[1]],
           status: table[index][columns[2]] 
@@ -81,7 +81,7 @@ app.post('/services', (req, res) => {
         const search_oid = indexes
           .filter((index)=> table[index][columns[0]].includes(name))
           .map((index) => ({ 
-              oid: `1.3.6.1.2.1.25.4.2.${index}`, 
+              oid: `1.3.6.1.2.1.25.4.2.1.3.${index}`, 
               resp: table[index][columns[0]], 
               runType: table[index][columns[1]],
               status: table[index][columns[2]] 
