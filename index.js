@@ -89,19 +89,39 @@ app.post('/services', (req, res) => {
     });
   }
 
-  const feedCb = (varbinds) => {
-      for (var varbind of varbinds) {
-          if (snmp.isVarbindError(varbind)) console.error (snmp.varbindError(varbind));
-          if (varbind.type === 4 && Buffer.from(varbind.value).toString('utf8').includes(name)) {
-            result.push({oid: varbind.oid, value: Buffer.from(varbind.value).toString('utf8'), status: 0 }); 
-          }
-          for (var rez of result) 
-            if (varbind.oid === `1.3.6.1.2.1.25.4.2.1.7.${rez.oid.split('.').pop()}`) rez.status = varbind.value;
-      }
+app.get('/hardware', async (req, res) => {
+
+  res.render('pages/hardware', {
+    oids: [],
+    tagline: '',
+    subTagline: '',
+  });
+});
+
+app.post('/hardware', (req, res) => {
+  const ip = req.body.ip;
+  const session = snmp.createSession(ip || "127.0.0.1", "public");
+  var oid = "1.3.6.1.2.1.25.3.2";
+  var columns = [3, 5];
+  const responseCb = (error, table) => {
+    if (error) {
+        console.error (error.toString ());
+    } else {
+        var indexes = [];
+        for (let index in table) indexes.push (parseInt (index));
+
+        const oids_data = indexes.map((index)=> ({ oid: `1.3.6.1.2.1.25.3.2.${index}`, resp: table[index][columns[0]], status: table[index][columns[1]] }));
+        res.render('pages/hardware', {
+          oids: oids_data,
+          tagline: `The following hardware found on requested host (${ip || "127.0.0.1"})`,
+          subTagline: `Statuses:  up(1), down(2)`,
+        });
+    }
   }
-  
-  var maxRepetitions = 20;
-  session.subtree(oid, maxRepetitions, feedCb, doneCb);
+
+  var maxRepetitions = 1;
+  console.log('HARDWARE TABLE');
+  session.tableColumns(oid, columns, maxRepetitions, responseCb);
 });
 
 app.get('/network', async (req, res) => {
