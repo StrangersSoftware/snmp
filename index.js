@@ -10,6 +10,26 @@ const port = 3000;
 
 const snmp = require("net-snmp");
 
+var receiverOptions = {
+  port: 162,
+  disableAuthorization: true,
+  includeAuthentication: false,
+  accessControlModelType: snmp.AccessControlModelType.None,
+  engineID: "8000B98380ABABABABABABABABABABABAB", // where the X's are random hex digits
+  address: null,
+  transport: "udp4"
+};
+
+var receiverCallback = function (error, notification) {
+  if ( error ) {
+      console.error (error);
+  } else {
+      console.log (JSON.stringify(notification, null, 2));
+  }
+};
+
+snmp.createReceiver (receiverOptions, receiverCallback);
+
 app.get('/', async (req, res) => {
   const tagline = `Please set the IP address and OIDs (or keep it empty) to get response`;
 
@@ -21,10 +41,10 @@ app.get('/', async (req, res) => {
 
 app.post('/', (req, res) => {
   let response = [];
-  const ip = req.body.ip;
+  const ip = req.body.ip || "127.0.0.1";
   const raw = req.body.oids && req.body.oids.split(',');
   const oids = raw || ["1.3.6.1.2.1.1.5.0", "1.3.6.1.2.1.1.1.0", "1.3.6.1.2.1.1.3.0"];
-  const session = snmp.createSession(ip || "127.0.0.1", "public");
+  const session = snmp.createSession(ip, "public");
   session.get(oids, function (error, oid_data) {
     if (error) {
       console.error(error);
@@ -47,6 +67,30 @@ app.post('/', (req, res) => {
     });
     session.close();
   });
+
+
+  var varbinds = [
+    {
+        oid: "1.3.6.1.4.1.2000.2",
+        type: snmp.ObjectType.OctetString,
+        value: "Hardware health status changed"
+    },
+    {
+        oid: "1.3.6.1.4.1.2000.3",
+        type: snmp.ObjectType.OctetString,
+        value: "status-error"
+    }
+  ];
+
+  var trapOid = "1.3.6.1.4.1.2000.1";
+
+  // version 2c should have been specified when creating the session
+  session.trap (trapOid, varbinds, function (error) {
+    if (error)
+        console.error (error);
+    console.log('TRAP');
+  });
+
 });
 
 app.get('/services', async (req, res) => res.render('pages/services', {
@@ -184,7 +228,7 @@ app.post('/network', (req, res) => {
       value: Number(new_status),
     }]
 
-    console.log('SET -', varbind[0]);
+    console.log('SET -', ip, varbind[0]);
 
     session.set(varbind, function (error, varbind) {
       if (error) {

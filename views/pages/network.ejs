@@ -33,9 +33,7 @@
                         </li>
                     <% }); %>
                 </ul>
-            </form>
-            <%if (oids.length > 0) { %>
-                <form action="/network" method="post">
+                <%if (oids.length > 0) { %>
                     <select id="select" name="select">
                         <% for ( var oid of oids ) 
                             {  %><option value="<%=oid.oid%>" ><%=oid.resp %></option><% } 
@@ -49,8 +47,8 @@
                         %>
                     </select>
                     <button type="submit">Set</button>
-                </form>
-            <% } %>
+                <% } %>
+            </form>
         </div>
     </main>
 
