@@ -26,10 +26,10 @@
                 <ul>
                     <% oids.forEach(function(oid) { %>
                         <li>
-                            <strong><%= oid.oid %></strong>
-                            = <%= oid.resp %>,
+                            <%= oid.resp %>,
                             status(<%= oid.status %>),
                             op. status(<%= oid.opStatus %>),
+                            MAC(<%= oid.mac %>),
                         </li>
                     <% }); %>
                 </ul>

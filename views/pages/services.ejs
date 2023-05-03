@@ -11,7 +11,7 @@
 
     <main>
         <div class="jumbotron">
-            <h1>Services</h1>
+            <h1>Applications</h1>
 
 
             <form action="/services" method="post">
@@ -24,16 +24,19 @@
                     <input type="text" id="name" name="name">
                 </p>
                 <p><%= tagline %></p>
-                <button type="submit">Request</button>
+                <button type="submit">Running</button>
+                <button type="submit" name="installed" value="clicked">Installed</button>
                 <p></p>
-                <p><%= subTagline %></p>
+                <% for (const line of subTagline.split("\n")) { %>
+                    <p><%= line %></p>
+                <% } %>
                 <ul>
                     <% oids.forEach(function(oid) { %>
                         <li>
-                            <strong><%= oid.oid %></strong>
-                            = <%= oid.resp %>,
-                            run type = <%= oid.runType %>,
-                            status = <%= oid.status %>
+                            <strong><%= oid.resp %></strong>
+                            <%if (oid.runType) { %>, run type(<%= oid.runType %>)<% } %>
+                            <%if (oid.status) { %>, status(<%= oid.status %>)<% } %>
+                            <%if (oid.path) { %>, path=<%= oid.path %> <% } %>
                         </li>
                     <% }); %>
                 </ul>
