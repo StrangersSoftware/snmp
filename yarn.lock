@@ -489,10 +489,10 @@ negotiator@0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-net-snmp@3.9.1:
-  version "3.9.1"
-  resolved "https://registry.yarnpkg.com/net-snmp/-/net-snmp-3.9.1.tgz#ff7925a1ba42dc5bfdc6237272c0e5a1a93932c1"
-  integrity sha512-9mITQQS+MzLhCbPs78XiW4/WIQvz22LCwYCIQSfD+7a7ANuDDcWZcaJnpdDsOAdW5nCs87SQq7bdusSPcTX/AQ==
+net-snmp@3.9.3:
+  version "3.9.3"
+  resolved "https://registry.yarnpkg.com/net-snmp/-/net-snmp-3.9.3.tgz#4f5b0968be3d9b0ef9917791552a83de79106084"
+  integrity sha512-d2QjmDu7qs7QrgI8WuzALoARpOhzX4dQX/E5XY/P8zQhBga3QCRZqoJ5Tt1yFxkNFL2D+NFPvbT4LrAur754yg==
   dependencies:
     asn1-ber "^1.2.1"
     smart-buffer "^4.1.0"
