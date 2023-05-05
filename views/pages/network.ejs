@@ -23,6 +23,7 @@
                 <p><%= subTagline %></p>
                 
                 <button type="submit">Request</button>
+                <p />
                 <ul>
                     <% oids.forEach(function(oid) { %>
                         <li>
@@ -33,21 +34,6 @@
                         </li>
                     <% }); %>
                 </ul>
-                <%if (oids.length > 0) { %>
-                    <select id="select" name="select">
-                        <% for ( var oid of oids ) 
-                            {  %><option value="<%=oid.oid%>" ><%=oid.resp %></option><% } 
-                        %>
-                    </select>
-                    <select id="set" name="set">
-                        <% 
-                            var options = [ { capt: 'up', value: 1}, { capt: 'down', value: 2} ]
-                            for ( var option of options ) 
-                            {  %><option value="<%=option.value %>" ><%=option.capt %></option><% } 
-                        %>
-                    </select>
-                    <button type="submit">Set</button>
-                <% } %>
             </form>
         </div>
     </main>
