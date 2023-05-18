@@ -28,7 +28,7 @@ var receiverCallback = function (error, notification) {
   if ( error ) { console.error (error); } 
   else {
     const output = notification.pdu.varbinds.map((item) => JSON.parse(item.value))
-    console.log('RECEIVER MESSAGE -', output);
+    console.log('SERVER RECEIVE MESSAGE -', output);
   }
 };
 
