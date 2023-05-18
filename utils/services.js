@@ -31,14 +31,16 @@ const getRunning = (error, table) => {
     var names = [];
     if (error) { console.error (error.toString ()); } 
     else {
-        for (let index in table) 
+      for (let index in table) 
+      {
+        if(table[index][columns[1]] && table[index][columns[0]] && table[index][columns[1]].length && !names.some((item) => {
+          return !Buffer.compare(item, table[index][columns[0]])
+        })) 
         {
-          if(table[index][columns[1]].length && !names.some((item) => !Buffer.compare(item, table[index][columns[0]]))) 
-          {
-            indexes.push (parseInt (index));
-            names.push(table[index][columns[0]]);
-          }
+          indexes.push (parseInt (index));
+          names.push(table[index][columns[0]]);
         }
+      }
     }
 
     return indexes.map((index)=> ({ 
